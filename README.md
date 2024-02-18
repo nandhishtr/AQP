@@ -1,3 +1,6 @@
+# Disclaimer
+This is a fork of AQP++ implementation originally from jinglin (jinglin_peng AT sfu DOT ca). Below is the content from the repo and more detail are present in here: <a href="https://github.com/sfu-db/aqppp/tree/master" target="_blank">GitHub</a> 
+
 # About
 This is the repo for paper 'AQP++: Connecting Approximate Query Processing With Aggregate Precomputation for Interactive Analytics'. The main idea of this work is using precomputed query results to improve the query quality of AQP (sampling) method. Our results show that AQP++ could trade only a little additional overhead to get a much better answer quality (e.g. 10X more accurate than AQP method!)  
 
