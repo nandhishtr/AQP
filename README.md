@@ -9,17 +9,14 @@ To use TPCH in windows: https://tedamoh.com/en/blog/data-modeling/78-generating-
 
 Finally, dbgen is executed with options -T L & -s 1 for generating lineitem table for 1GB data size (make sure you have enough space for the data :-) )
 
-# About
+# About - from AQP++
 This is the repo for paper 'AQP++: Connecting Approximate Query Processing With Aggregate Precomputation for Interactive Analytics'. The main idea of this work is using precomputed query results to improve the query quality of AQP (sampling) method. Our results show that AQP++ could trade only a little additional overhead to get a much better answer quality (e.g. 10X more accurate than AQP method!)  
 
 Currently the repo contains the experimental code. We will release version 1.0 very soon.
 
 The experimental code was written using Visual Studio 2017, and built on top of SQL Server 2017. It could run on Windows system.  
 
-# Link
+# Link  - from AQP++
 <a href="../master/SIGMOD2018_AQP%2B%2B_paper.pdf" target="_blank">paper</a>
 
 <a href="../master/SIGMOD2018_AQP%2B%2B_slides.pdf" target="_blank">slides</a>
-
-# Questions?
-If you have any question, please feel free to connect jinglin (jinglin_peng AT sfu DOT ca).
