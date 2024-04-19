@@ -48,6 +48,8 @@ namespace expDemo {
 		double time_read_small_sample = aqppp::Tool::get_percentile(read_small_sample_times, 0.5);
 		o_PAR.SAMPLE_ROW_NUM = o_sample[0].size();
 		std::cout <<"o_sample"<< o_sample[0].size();
+		std::cout << __func__ << " Time taken sample: " << time_read_sample << std::endl;
+		std::cout << __func__ << " Time taken small sample: " << time_read_small_sample << std::endl;
 		return{ time_read_sample,time_read_small_sample };
 	}
 

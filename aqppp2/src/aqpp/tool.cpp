@@ -170,6 +170,9 @@ namespace aqppp
 		*/
 	 void Tool::TransSample(const std::vector<std::vector<double>> &sample, std::vector<std::vector<CA>> &o_CAsample)
 		{
+		 std::cout << __func__ << " ENTER" << std::endl;
+
+		 double st = clock();
 		 std::vector<std::vector<CA> >temp_casample = std::vector<std::vector<CA>>(sample.size() - 1);
 		 
 
@@ -198,6 +201,10 @@ namespace aqppp
 
 			}
 
+			double read_time = ((double)clock() - st) / CLOCKS_PER_SEC;
+			std::cout << __func__ << " Time taken first for loop: " << read_time << std::endl;
+
+			st = clock();
 			o_CAsample = std::vector<std::vector<CA>>(sample.size() - 1);
 			for (int ci = 0; ci < temp_casample.size(); ci++)
 			{
@@ -228,7 +235,9 @@ namespace aqppp
 				o_CAsample[ci] = cur_col;
 
 			}
-
+			read_time = ((double)clock() - st) / CLOCKS_PER_SEC;
+			std::cout << __func__ << " Time taken second for loop: " << read_time << std::endl;
+			std::cout << __func__ << " EXIT" << std::endl;
 			return;
 		}
 

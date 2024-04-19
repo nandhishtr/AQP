@@ -119,6 +119,8 @@ namespace aqppp {
 		double t1=CreateDbSample(sqlconnectionhandle, seed+1, db_name, table_name,sample_rates.first, sample_names.first, num_dim4rand, ctg_dim4rand);
 		double t2= CreateDbSample(sqlconnectionhandle, seed+2, db_name, sample_names.first, sample_rates.second, sample_names.second, num_dim4rand, ctg_dim4rand);
 		//double t3 = CreateBLBDbSample(sqlconnectionhandle, seed+1, db_name, table_name, sample_rates.second, sample_names.second, num_dim4rand, ctg_dim4rand);
+		std::cout << __func__ << " Time taken sample: " << t1 << std::endl;
+		std::cout << __func__ << " Time taken small sample: " << t2 << std::endl;
 		return { t1,t2 };
 	}
 
@@ -258,6 +260,7 @@ namespace aqppp {
 		std::string query = ReadTableStr(db_name, table_name, AGGREGATE_NAME, CONDITION_NAMES);
 		SqlInterface::SqlQuery(query, sqlstatementhandle);
 		short int COL_NUM = 0;
+		// count the number of columns resulting from the query
 		SQLNumResultCols(sqlstatementhandle, &COL_NUM);
 		std::cout << "colnum " << COL_NUM;
 		for (int i = 0; i < COL_NUM; i++)
@@ -278,9 +281,10 @@ namespace aqppp {
 				std::cout << "still exec" << std::endl;
 			}
 
-			
+		// fetch the data from each row, and store in the o_table	
 		while (SQLFetch(sqlstatementhandle) == SQL_SUCCESS)
 		{
+			
 			double acc_data= Column2Numeric(sqlstatementhandle, 0, AGGREGATE_NAME);
 			o_table[0].push_back(acc_data);
 			//std::cout << "acc data" << acc_data;
