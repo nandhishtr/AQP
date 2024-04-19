@@ -86,19 +86,26 @@ int main()
 	if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)) return -1;
 	if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle)) return -1;
 	ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
-	SQLCHAR* serverName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("BURTSEV-LTP\AQPPP"));
-	SQLCHAR* userName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("test"));
-	SQLCHAR* password = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("test"));
+	SQLCHAR* serverName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2"));
+	SQLCHAR* userName = NULL; //const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2\Lenovo"));
+	SQLCHAR* password = NULL; // const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("test"));
 	//switch (SQLConnect(sqlconnectionhandle, serverName, SQL_NTS, userName, SQL_NTS, password, SQL_NTS))    //this is the connection string to connect SQLServer.
 	//cout << SQLConnect(sqlconnectionhandle, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS);
-	switch (SQLConnect(sqlconnectionhandle, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS))    //this is the connection string to connect SQLServer.
+	//switch (SQLConnect(sqlconnectionhandle, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS))    //this is the connection string to connect SQLServer.
+	//SQLCHAR* serverName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2"));
+	//SQLCHAR* userName = NULL; // Remove the username
+	//SQLCHAR* password = NULL; // Remove the password
+	// Specify Trusted_Connection=yes or Integrated Security=SSPI to use Windows authentication
+	//SQLCHAR* connectionString = const_cast<SQLCHAR*>("DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-PQDMPT2;Trusted_Connection=yes;");
+	SQLCHAR connectionString[] = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-PQDMPT2;Trusted_Connection=yes;";
+	switch (SQLDriverConnect(sqlconnectionhandle, NULL, connectionString, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT)) 
 	{
 	case SQL_SUCCESS_WITH_INFO:
 		std::cout << "success" << std::endl;
 		ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
 		break;
 	default:
-		std::cout << "error" << std::endl;
+		std::cout << "Main error" << std::endl;
 		ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
 		getchar();
 		return -1;
