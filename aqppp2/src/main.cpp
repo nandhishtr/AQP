@@ -47,13 +47,30 @@ int GenQuery(SQLHANDLE& sqlconnectionhandle)
 	PAR.DB_NAME = "skew_s100_z2.dbo";
 	PAR.CONDITION_NAMES = { "L_ORDERKEY","L_PARTKEY" };
 	aqppp::SqlInterface::CreateDbSamples(sqlconnectionhandle, PAR.RAND_SEED, PAR.DB_NAME, PAR.TABLE_NAME, { PAR.SAMPLE_RATE,PAR.SUB_SAMPLE_RATE }, { PAR.SAMPLE_NAME,PAR.SUB_SAMPLE_NAME });
-	expDemo::ReadSamples(sqlconnectionhandle, PAR, 1, sample, std::vector<std::vector<double>>());
+	sample = aqppp::Tool::loadDataFromFile("readSamples.txt");
+	if (sample.empty())
+	{
+		expDemo::ReadSamples(sqlconnectionhandle, PAR, 1, sample, std::vector<std::vector<double>>());
+		aqppp::Tool::saveDataToFile("readSamples.txt", sample);
+	}
 	//expDemo::ReadBLBSamples(sqlconnectionhandle, PAR, 50, std::vector <std::vector <std::vector<double>>>());
 	std::vector<std::vector<aqppp::CA>> CAsample = std::vector<std::vector<aqppp::CA>>();
-	aqppp::Tool::TransSample(sample, CAsample);
+	CAsample = aqppp::Tool::loadCASampleDataFromFile("TransSample.txt");
+	if (CAsample.empty())
+	{
+		aqppp::Tool::TransSample(sample, CAsample);
+		aqppp::Tool::saveDataToFile("TransSample.txt", CAsample);
+	}
 	std::vector<std::vector<aqppp::Condition>> user_queries = std::vector<std::vector<aqppp::Condition>>();
-	aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, QUERY_NUM, { min_sel,max_sel }, user_queries);
-	aqppp::Tool::SaveQueryFile("default_queries.txt", user_queries);
+	aqppp::Tool::ReadQueriesFromFile("default_queries.txt", QUERY_NUM, user_queries);
+	if (user_queries.empty())
+	{
+		aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, QUERY_NUM, { min_sel,max_sel }, user_queries);
+		aqppp::Tool::SaveQueryFile("default_queries.txt", user_queries);
+		// user_queries format: lb0 ub0 lb1 ub1
+		// user_queries format: lb0 ub0 lb1 ub1
+	}
+
 	return 0;
 }
 

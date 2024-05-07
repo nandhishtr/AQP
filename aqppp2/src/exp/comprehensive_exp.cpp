@@ -111,17 +111,28 @@ namespace expDemo {
 		std::vector <std::vector<double>> sample;
 		std::vector <std::vector<double>> small_sample;
 		//std::vector <std::vector <std::vector<double>>> BLB_sample;
-		std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, PAR, 10, sample, small_sample);
-		int subsample_number = 50;
-		int resample_number = 50;
-		float gamma = 0.8;
+		sample = aqppp::Tool::loadDataFromFile("readDemoSample.txt");
+		small_sample = aqppp::Tool::loadDataFromFile("readDemoSmallSample.txt");
+		double time_read_sample = 0;
+		double time_read_small_sample = 0;
+		if (sample.empty() || small_sample.empty())
+		{
+			std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, PAR, 10, sample, small_sample);
+			aqppp::Tool::saveDataToFile("readDemoSample.txt", sample);
+			aqppp::Tool::saveDataToFile("readDemoSmallSample.txt", small_sample);
+			time_read_sample = read_sample_times.first;
+			time_read_small_sample = read_sample_times.second;
+		}
+
+		//int subsample_number = 50;
+		//int resample_number = 50;
+		//float gamma = 0.8;
 		//std::pair<double, double> read_BLB_sample_times = ReadBLBSamples(sqlconnectionhandle, PAR, subsample_number, BLB_sample);
 		//int subsample_size = BLB_sample[0].size();
 		//int resample_size = pow(subsample_size, 1/gamma);
 		//double time_read_BLB_sample = read_BLB_sample_times.first;
 		
-		double time_read_sample = read_sample_times.first;
-		double time_read_small_sample = read_sample_times.second;
+
 
 		fprintf(info_file, "sample_row_num:%f\n", (double)sample[0].size());
 		std::cout << "sub_sample size:" << small_sample[0].size() << std::endl;
@@ -132,29 +143,41 @@ namespace expDemo {
 		/*----------transfer sample into ca_sample--------*/
 		double t3 = clock();
 		std::vector<std::vector<aqppp::CA>> CAsample = std::vector<std::vector<aqppp::CA>>();
-		std::cout << sample.size();
+		std::cout << sample.size() << std::endl;
 		std::cout << sample[0].size() << std::endl;
 		std::cout << sample[1].size() << std::endl;
 		std::cout << sample[2].size() << std::endl;
-		aqppp::Tool::TransSample(sample, CAsample);
+		CAsample = aqppp::Tool::loadCASampleDataFromFile("TransDemoSample.txt");
+		if (CAsample.empty())
+		{
+			aqppp::Tool::TransSample(sample, CAsample);
+			aqppp::Tool::saveDataToFile("TransDemoSample.txt", CAsample);
+		}
 		double time_trans_sample = (clock() - t3) / CLOCKS_PER_SEC;
 		/*------------------------------------------------*/
 
 		std::cout << "gen query" << std::endl;
 		std::vector<std::vector<aqppp::Condition>> user_queries = std::vector<std::vector<aqppp::Condition>>();
-
-		if (!aqppp::DoubleEqual(PAR.SAMPLE_RATE, InitPar4DefaultSample().SAMPLE_RATE))
+		aqppp::Tool::ReadQueriesFromFile("demoQueries.txt", exp_par.QUERY_NUM, user_queries);
+		if (user_queries.empty())
 		{
-			aqppp::Settings tppar = InitPar4DefaultSample();
-			std::vector <std::vector<double>> tpsample;
-			std::vector<std::vector<aqppp::CA>> tpcasample = std::vector<std::vector<aqppp::CA>>();
-			aqppp::Tool::TransSample(sample, tpcasample);
-			std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, tppar, 1, tpsample, std::vector <std::vector<double>>());
-			aqppp::Tool::GenUserQuires(tpsample, tpcasample, tppar.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
-		}
-		else
-		{
-			aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
+			double t10 = clock();
+			if (!aqppp::DoubleEqual(PAR.SAMPLE_RATE, InitPar4DefaultSample().SAMPLE_RATE))
+			{
+				aqppp::Settings tppar = InitPar4DefaultSample();
+				std::vector <std::vector<double>> tpsample;
+				std::vector<std::vector<aqppp::CA>> tpcasample = std::vector<std::vector<aqppp::CA>>();
+				aqppp::Tool::TransSample(sample, tpcasample);
+				std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, tppar, 1, tpsample, std::vector <std::vector<double>>());
+				aqppp::Tool::GenUserQuires(tpsample, tpcasample, tppar.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
+			}
+			else
+			{
+				aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
+			}
+			double time_GenQueries = (clock() - t10) / CLOCKS_PER_SEC;
+			std::cout << "gen query time taken: " << time_GenQueries << std::endl;
+			aqppp::Tool::SaveQueryFile("demoQueries.txt", user_queries);
 		}
 		std::cout << "gen query num: " << user_queries.size() << std::endl;
 
@@ -225,32 +248,7 @@ namespace expDemo {
 				fprintf(query_file, "(%.2f, %.2f) ", ele.lb, ele.ub);
 			}
 			fprintf(query_file, "\n");
-			/*
-			double t0_blb = clock();
-			//multi_threaded_filtering(BLB_sample, cur_q, subsample_data_vec);
-			for (int i = 0; i < subsample_number; i++) {
-				aqpp_blb_filtering(BLB_sample[i], cur_q, subsample_data_vec[i]);
-			}
-			double t1_blb = clock();
-			std::vector<std::vector<std::vector<float>>> data_for_resampling(subsample_number,
-				std::vector<std::vector<float>>(
-					resample_number,
-					std::vector<float>(0)));
 
-			multi_threaded_subsamples_replication(subsample_data_vec, data_for_resampling, subsample_number, resample_number);
-
-			std::vector<std::vector<std::vector<float>>> resampling_coeffs(subsample_number,
-				std::vector<std::vector<float>>(resample_number, std::vector<float>(0)));
-
-			multi_threaded_blb_resampling(data_for_resampling, resampling_coeffs, subsample_number, resample_number, subsample_size, resample_size);
-			double t2_blb = clock();
-			std::vector<double> blb_query_sum;
-			blb_aggregation(data_for_resampling, blb_query_sum);
-
-			double blb_query_answer = calculate_mean(blb_query_sum);
-			double blb_query_answer_standart_error = calculate_standard_error(blb_query_sum);
-			std::pair<double, double> conf_interval = calculate_confidence_interval(blb_query_sum, 0.95);
-			double t3_blb = clock();*/
 			double t0_blb = clock();
 			double t1_blb = clock();
 			double t2_blb = clock();

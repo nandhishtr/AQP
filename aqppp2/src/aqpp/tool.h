@@ -40,8 +40,15 @@ namespace aqppp
 		static double ComputeCorrelation(std::vector<double>& X, std::vector<double>& Y);
 
 		static void MkDirRecursively(std::string dirpath);
-
 		static std::vector<std::string> split(const std::string &s, char delim);
+
+		static void saveDataToFile(const std::string& filename, const std::vector<std::vector<double>>& data);
+		static std::vector<std::vector<double>> loadDataFromFile(const std::string& filename);
+		static void saveDataToFile(const std::string& filename, const std::vector<std::vector<aqppp::CA>>& data);
+		static std::vector<std::vector<aqppp::CA>> loadCASampleDataFromFile(const std::string& filename);
+		static void saveDataToFile(const std::string& filename, const std::vector<std::vector<aqppp::Condition>>& data);
+		static std::vector<std::vector<aqppp::Condition>> loadUserQueriesDataFromFile(const std::string& filename);
+
 		static void SaveQueryFile(std::string query_file_full_name, std::vector<std::vector<Condition>> &o_user_queries);
 		static void ReadQueriesFromFile(std::string query_file_full_name, int query_dim, std::vector<std::vector<Condition>> &o_user_queries);
 		/*

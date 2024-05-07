@@ -194,6 +194,7 @@ namespace aqppp
 							<< " ri: " << ri << std::endl;
 					}
 					//temp_casample[ci - 1][ri] = temp;
+					//NTODO: Check the push_back index, it is appending to the empty places instead of starting from 0th position
 					temp_casample[ci - 1].push_back(temp);
 					
 				}
@@ -240,6 +241,143 @@ namespace aqppp
 			std::cout << __func__ << " EXIT" << std::endl;
 			return;
 		}
+
+	 void Tool::saveDataToFile(const std::string& filename, const std::vector<std::vector<double>>& data) {
+		 std::ofstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for writing: " << filename << std::endl;
+			 return;
+		 }
+
+		 // Write the number of rows and columns to the file
+		 size_t numRows = data.size();
+		 size_t numCols = (numRows > 0) ? data[0].size() : 0;
+		 file.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
+		 file.write(reinterpret_cast<const char*>(&numCols), sizeof(numCols));
+
+		 // Write the data to the file
+		 for (const auto& row : data) {
+			 file.write(reinterpret_cast<const char*>(row.data()), row.size() * sizeof(double));
+		 }
+
+		 file.close();
+	 }
+
+
+	 // Function to load data from a file
+	 std::vector<std::vector<double>> Tool::loadDataFromFile(const std::string& filename) {
+		 std::ifstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for reading: " << filename << std::endl;
+			 return {};
+		 }
+
+		 // Read the number of rows and columns from the file
+		 size_t numRows, numCols;
+		 file.read(reinterpret_cast<char*>(&numRows), sizeof(numRows));
+		 file.read(reinterpret_cast<char*>(&numCols), sizeof(numCols));
+
+		 // Read the data from the file
+		 std::vector<std::vector<double>> data(numRows, std::vector<double>(numCols));
+		 for (auto& row : data) {
+			 file.read(reinterpret_cast<char*>(row.data()), numCols * sizeof(double));
+		 }
+
+		 file.close();
+
+		 return data;
+	 }
+
+	 void Tool::saveDataToFile(const std::string& filename, const std::vector<std::vector<aqppp::CA>>& data) {
+		 std::ofstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for writing: " << filename << std::endl;
+			 return;
+		 }
+
+		 // Write the number of rows to the file
+		 size_t numRows = data.size();
+		 file.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
+
+		 // Write each row's size and data to the file
+		 for (const auto& row : data) {
+			 size_t rowSize = row.size();
+			 file.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
+			 file.write(reinterpret_cast<const char*>(row.data()), rowSize * sizeof(aqppp::CA));
+		 }
+
+		 file.close();
+	 }
+
+	 std::vector<std::vector<aqppp::CA>> Tool::loadCASampleDataFromFile(const std::string& filename) {
+		 std::ifstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for reading: " << filename << std::endl;
+			 return {};
+		 }
+
+		 // Read the number of rows from the file
+		 size_t numRows;
+		 file.read(reinterpret_cast<char*>(&numRows), sizeof(numRows));
+
+		 // Read each row's size and data from the file
+		 std::vector<std::vector<aqppp::CA>> data(numRows);
+		 for (auto& row : data) {
+			 size_t rowSize;
+			 file.read(reinterpret_cast<char*>(&rowSize), sizeof(rowSize));
+			 row.resize(rowSize);
+			 file.read(reinterpret_cast<char*>(row.data()), rowSize * sizeof(aqppp::CA));
+		 }
+
+		 file.close();
+
+		 return data;
+	 }
+
+
+	 void Tool::saveDataToFile(const std::string& filename, const std::vector<std::vector<aqppp::Condition>>& data) {
+		 std::ofstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for writing: " << filename << std::endl;
+			 return;
+		 }
+
+		 // Write the number of rows and columns to the file
+		 size_t numRows = data.size();
+		 size_t numCols = (numRows > 0) ? data[0].size() : 0;
+		 file.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
+		 file.write(reinterpret_cast<const char*>(&numCols), sizeof(numCols));
+
+		 // Write the data to the file
+		 for (const auto& row : data) {
+			 file.write(reinterpret_cast<const char*>(row.data()), row.size() * sizeof(aqppp::Condition));
+		 }
+
+		 file.close();
+	 }
+
+	 std::vector<std::vector<aqppp::Condition>> Tool::loadUserQueriesDataFromFile(const std::string& filename) {
+		 std::ifstream file(filename, std::ios::binary);
+		 if (!file.is_open()) {
+			 std::cerr << "Failed to open file for reading: " << filename << std::endl;
+			 return {};
+		 }
+
+		 // Read the number of rows and columns from the file
+		 size_t numRows, numCols;
+		 file.read(reinterpret_cast<char*>(&numRows), sizeof(numRows));
+		 file.read(reinterpret_cast<char*>(&numCols), sizeof(numCols));
+
+		 // Read the data from the file
+		 std::vector<std::vector<aqppp::Condition>> data(numRows, std::vector<aqppp::Condition>(numCols));
+		 for (auto& row : data) {
+			 file.read(reinterpret_cast<char*>(row.data()), numCols * sizeof(aqppp::Condition));
+		 }
+
+		 file.close();
+
+		 return data;
+	 }
 
 	 void Tool::ReadQueriesFromFile(std::string query_file_full_name, int query_dim, std::vector<std::vector<Condition>> &o_user_queries)
 	 {
@@ -394,6 +532,7 @@ namespace aqppp
 					if (counter < 1000)
 					{
 						std::cout << "iter_num:" << iter_num << " qid:" << query_id << " selectively:" << est_sel.second << std::endl;
+						//NTODO: useless select set
 						select_set.insert(est_sel.first);
 						o_user_queries.push_back(cur_query);
 						query_id++;

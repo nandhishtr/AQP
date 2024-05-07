@@ -159,8 +159,11 @@ namespace aqppp {
 		std::cout << drop_sample << std::endl;
 		std::cout << create_sample << std::endl;
 		std::cout << create_sample_cstore_indx << std::endl;
-
-		SqlQuery(drop_sample, sqlstatementhandle);
+		// Check if the sample already exists
+		//std::string check_sample_existence = "IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '" + db_name + "' AND TABLE_NAME = '" + sample_name + "') SELECT 1 ELSE SELECT 0;";
+		//int sample_exists = 0;
+		//SqlQuery(check_sample_existence, sqlstatementhandle, sample_exists);
+		//SqlQuery(drop_sample, sqlstatementhandle);
 		double t1 = clock();
 		SqlQuery(create_sample, sqlstatementhandle);
 		SqlQuery(create_sample_cstore_indx, sqlstatementhandle);

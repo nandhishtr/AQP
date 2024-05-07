@@ -529,6 +529,7 @@ namespace aqppp {
 	///return all the mtl points in CA form, which is by condition arribute.
 	double HillClimbing::ChoosePoints1Dim(const std::vector<CA>& cur_col, const int MTL_POINT_NUM, std::vector<CA>& o_mtl_points, int *pIter_num, double *puf_err,int INIT_WAY,int ADJUST_WAY)
 	{
+		//NTODO: o_mtl_points are simply calculated and not used. 
 		if (MTL_POINT_NUM >= cur_col.size())
 		{
 			o_mtl_points = std::vector<CA>(cur_col);
@@ -572,6 +573,7 @@ namespace aqppp {
 
 		std::vector < double> sum_acc = std::vector<double>();
 		std::vector<double> sqrsum_acc = std::vector<double>();
+		//NTODO: unnecessary calculation of the same thing.
 		ComputeSums(cur_col, sum_acc, sqrsum_acc);
 
 		//pieces: key(sid,tid) value:(local_max_id,local_max_var)
