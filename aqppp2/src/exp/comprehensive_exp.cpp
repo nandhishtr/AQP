@@ -117,16 +117,15 @@ namespace expDemo {
 		double time_read_small_sample = 0;
 		if (sample.empty() || small_sample.empty())
 		{
-			std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, PAR, 10, sample, small_sample);
+			std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, PAR, 1, sample, small_sample);
 			aqppp::Tool::saveDataToFile("readDemoSample.txt", sample);
 			aqppp::Tool::saveDataToFile("readDemoSmallSample.txt", small_sample);
 			time_read_sample = read_sample_times.first;
 			time_read_small_sample = read_sample_times.second;
 		}
-
-		//int subsample_number = 50;
-		//int resample_number = 50;
-		//float gamma = 0.8;
+		PAR.SAMPLE_ROW_NUM = sample[0].size();
+		double time_read_samples = (clock() - t1) / CLOCKS_PER_SEC;
+		std::cout << "READ SAMPLES TIME: " << time_read_samples << std::endl;
 		//std::pair<double, double> read_BLB_sample_times = ReadBLBSamples(sqlconnectionhandle, PAR, subsample_number, BLB_sample);
 		//int subsample_size = BLB_sample[0].size();
 		//int resample_size = pow(subsample_size, 1/gamma);
@@ -151,17 +150,18 @@ namespace expDemo {
 		if (CAsample.empty())
 		{
 			aqppp::Tool::TransSample(sample, CAsample);
-			aqppp::Tool::saveDataToFile("TransDemoSample.txt", CAsample);
+			//aqppp::Tool::saveDataToFile("TransDemoSample.txt", CAsample);
 		}
 		double time_trans_sample = (clock() - t3) / CLOCKS_PER_SEC;
 		/*------------------------------------------------*/
-
+		std::cout << "TRANS SAMPLES TIME: " << time_trans_sample << std::endl;
 		std::cout << "gen query" << std::endl;
+		double t4 = clock();
 		std::vector<std::vector<aqppp::Condition>> user_queries = std::vector<std::vector<aqppp::Condition>>();
 		aqppp::Tool::ReadQueriesFromFile("demoQueries.txt", exp_par.QUERY_NUM, user_queries);
 		if (user_queries.empty())
 		{
-			double t10 = clock();
+			//double t10 = clock();
 			if (!aqppp::DoubleEqual(PAR.SAMPLE_RATE, InitPar4DefaultSample().SAMPLE_RATE))
 			{
 				aqppp::Settings tppar = InitPar4DefaultSample();
@@ -175,10 +175,10 @@ namespace expDemo {
 			{
 				aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
 			}
-			double time_GenQueries = (clock() - t10) / CLOCKS_PER_SEC;
-			std::cout << "gen query time taken: " << time_GenQueries << std::endl;
 			aqppp::Tool::SaveQueryFile("demoQueries.txt", user_queries);
 		}
+		double time_gen_userQueries = (clock() - t4) / CLOCKS_PER_SEC;
+		std::cout << "GenUserQuires TIME: " << time_gen_userQueries << std::endl;
 		std::cout << "gen query num: " << user_queries.size() << std::endl;
 
 		std::cout << "sample size:" << sample[0].size() << std::endl;
