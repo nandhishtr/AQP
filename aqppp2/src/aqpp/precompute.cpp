@@ -154,8 +154,9 @@ namespace aqppp {
 		for (auto& statehandle : vec_sqlstatementhandle)
 		{
 			SQLHANDLE new_connect_handle = NULL;
-			//if (t!=0) SqlInterface::MakeSqlConnection("SQLServer", "aqpplus1", "aqpplus", new_connect_handle);
-			SqlInterface::MakeSqlConnection("SQLServer", "aqpplus", "aqpplus", new_connect_handle);
+			aqppp::ConnectionSettings CONNECTDATA = aqppp::ConnectionSettings();
+			SqlInterface::MakeSqlConnection(CONNECTDATA.DNS_NAME, CONNECTDATA.USER_NAME, CONNECTDATA.PASSWORD, new_connect_handle);
+
 			vec_sqlconnection.push_back(new_connect_handle);
 			if (SQLAllocHandle(SQL_HANDLE_STMT, new_connect_handle, &statehandle) != SQL_SUCCESS) return -1;
 			t++;

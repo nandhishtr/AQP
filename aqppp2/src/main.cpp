@@ -21,6 +21,8 @@
 #include<vector>
 #include<sql.h>
 #include<unordered_map>
+#include"aqpp\common_content.h"
+
 using namespace std;
 using namespace aqppp;
 
@@ -47,26 +49,26 @@ int GenQuery(SQLHANDLE& sqlconnectionhandle)
 	PAR.DB_NAME = "skew_s100_z2.dbo";
 	PAR.CONDITION_NAMES = { "L_ORDERKEY","L_PARTKEY" };
 	aqppp::SqlInterface::CreateDbSamples(sqlconnectionhandle, PAR.RAND_SEED, PAR.DB_NAME, PAR.TABLE_NAME, { PAR.SAMPLE_RATE,PAR.SUB_SAMPLE_RATE }, { PAR.SAMPLE_NAME,PAR.SUB_SAMPLE_NAME });
-	sample = aqppp::Tool::loadDataFromFile("readSamples.txt");
+	sample = aqppp::Tool::loadDataFromFile("cache\\readSamples.txt");
 	if (sample.empty())
 	{
 		expDemo::ReadSamples(sqlconnectionhandle, PAR, 1, sample, std::vector<std::vector<double>>());
-		aqppp::Tool::saveDataToFile("readSamples.txt", sample);
+		aqppp::Tool::saveDataToFile("cache\\readSamples.txt", sample);
 	}
 	//expDemo::ReadBLBSamples(sqlconnectionhandle, PAR, 50, std::vector <std::vector <std::vector<double>>>());
 	std::vector<std::vector<aqppp::CA>> CAsample = std::vector<std::vector<aqppp::CA>>();
-	CAsample = aqppp::Tool::loadCASampleDataFromFile("TransSample.txt");
+	CAsample = aqppp::Tool::loadCASampleDataFromFile("cache\\TransSample.txt");
 	if (CAsample.empty())
 	{
 		aqppp::Tool::TransSample(sample, CAsample);
-		aqppp::Tool::saveDataToFile("TransSample.txt", CAsample);
+		aqppp::Tool::saveDataToFile("cache\\TransSample.txt", CAsample);
 	}
 	std::vector<std::vector<aqppp::Condition>> user_queries = std::vector<std::vector<aqppp::Condition>>();
-	aqppp::Tool::ReadQueriesFromFile("default_queries.txt", QUERY_NUM, user_queries);
+	aqppp::Tool::ReadQueriesFromFile("cache\\default_queries.txt", QUERY_NUM, user_queries);
 	if (user_queries.empty())
 	{
 		aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, QUERY_NUM, { min_sel,max_sel }, user_queries);
-		aqppp::Tool::SaveQueryFile("default_queries.txt", user_queries);
+		aqppp::Tool::SaveQueryFile("cache\\default_queries.txt", user_queries);
 		// user_queries format: lb0 ub0 lb1 ub1
 		// user_queries format: lb0 ub0 lb1 ub1
 	}
@@ -103,18 +105,11 @@ int main()
 	if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)) return -1;
 	if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle)) return -1;
 	ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
-	SQLCHAR* serverName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2"));
-	SQLCHAR* userName = NULL; //const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2\Lenovo"));
-	SQLCHAR* password = NULL; // const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("test"));
-	//switch (SQLConnect(sqlconnectionhandle, serverName, SQL_NTS, userName, SQL_NTS, password, SQL_NTS))    //this is the connection string to connect SQLServer.
-	//cout << SQLConnect(sqlconnectionhandle, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS);
-	//switch (SQLConnect(sqlconnectionhandle, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS, (SQLCHAR*)"test", SQL_NTS))    //this is the connection string to connect SQLServer.
-	//SQLCHAR* serverName = const_cast<SQLCHAR*>(reinterpret_cast<const SQLCHAR*>("DESKTOP-PQDMPT2"));
-	//SQLCHAR* userName = NULL; // Remove the username
-	//SQLCHAR* password = NULL; // Remove the password
-	// Specify Trusted_Connection=yes or Integrated Security=SSPI to use Windows authentication
-	//SQLCHAR* connectionString = const_cast<SQLCHAR*>("DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-PQDMPT2;Trusted_Connection=yes;");
-	SQLCHAR connectionString[] = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-PQDMPT2;Trusted_Connection=yes;";
+	aqppp::ConnectionSettings CONNECTDATA = aqppp::ConnectionSettings();
+	SQLCHAR* serverName = (SQLCHAR*)(CONNECTDATA.SERVER_NAME).c_str();
+	SQLCHAR* userName = (CONNECTDATA.USER_NAME).empty() ? NULL : (SQLCHAR*)(CONNECTDATA.USER_NAME).c_str();
+	SQLCHAR* password = (CONNECTDATA.PASSWORD).empty() ? NULL : (SQLCHAR*)(CONNECTDATA.PASSWORD).c_str();
+	SQLCHAR* connectionString = (SQLCHAR*)(CONNECTDATA.CONNECTION_STRING).c_str();
 	switch (SQLDriverConnect(sqlconnectionhandle, NULL, connectionString, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT)) 
 	{
 	case SQL_SUCCESS_WITH_INFO:
@@ -122,7 +117,7 @@ int main()
 		ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
 		break;
 	default:
-		std::cout << "Main error" << std::endl;
+		std::cout << "error" << std::endl;
 		ShowError(SQL_HANDLE_DBC, sqlconnectionhandle);
 		getchar();
 		return -1;

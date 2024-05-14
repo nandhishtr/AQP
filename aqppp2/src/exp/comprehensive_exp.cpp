@@ -65,7 +65,7 @@ namespace expDemo {
 	ComprehensiveExp::ExpPar ComprehensiveExp::GetExpPar()
 	{
 		ExpPar exp_par = ExpPar();
-		exp_par.isMTL = false;
+		exp_par.isMTL = true;
 		exp_par.DROP_INDEX_BEFORE_CREATE = false;
 		exp_par.QUERY_DB_REAL_VALUE = true;
 		exp_par.QUERY_DB_SELECTIVELY = false;
@@ -111,15 +111,15 @@ namespace expDemo {
 		std::vector <std::vector<double>> sample;
 		std::vector <std::vector<double>> small_sample;
 		//std::vector <std::vector <std::vector<double>>> BLB_sample;
-		sample = aqppp::Tool::loadDataFromFile("readDemoSample.txt");
-		small_sample = aqppp::Tool::loadDataFromFile("readDemoSmallSample.txt");
+		sample = aqppp::Tool::loadDataFromFile("cache\\readDemoSample.txt");
+		small_sample = aqppp::Tool::loadDataFromFile("cache\\readDemoSmallSample.txt");
 		double time_read_sample = 0;
 		double time_read_small_sample = 0;
 		if (sample.empty() || small_sample.empty())
 		{
 			std::pair<double, double> read_sample_times = ReadSamples(sqlconnectionhandle, PAR, 1, sample, small_sample);
-			aqppp::Tool::saveDataToFile("readDemoSample.txt", sample);
-			aqppp::Tool::saveDataToFile("readDemoSmallSample.txt", small_sample);
+			aqppp::Tool::saveDataToFile("cache\\readDemoSample.txt", sample);
+			aqppp::Tool::saveDataToFile("cache\\readDemoSmallSample.txt", small_sample);
 			time_read_sample = read_sample_times.first;
 			time_read_small_sample = read_sample_times.second;
 		}
@@ -146,11 +146,11 @@ namespace expDemo {
 		std::cout << sample[0].size() << std::endl;
 		std::cout << sample[1].size() << std::endl;
 		std::cout << sample[2].size() << std::endl;
-		CAsample = aqppp::Tool::loadCASampleDataFromFile("TransDemoSample.txt");
+		CAsample = aqppp::Tool::loadCASampleDataFromFile("cache\\TransDemoSample.txt");
 		if (CAsample.empty())
 		{
 			aqppp::Tool::TransSample(sample, CAsample);
-			//aqppp::Tool::saveDataToFile("TransDemoSample.txt", CAsample);
+			aqppp::Tool::saveDataToFile("cache\\TransDemoSample.txt", CAsample);
 		}
 		double time_trans_sample = (clock() - t3) / CLOCKS_PER_SEC;
 		/*------------------------------------------------*/
@@ -158,7 +158,7 @@ namespace expDemo {
 		std::cout << "gen query" << std::endl;
 		double t4 = clock();
 		std::vector<std::vector<aqppp::Condition>> user_queries = std::vector<std::vector<aqppp::Condition>>();
-		aqppp::Tool::ReadQueriesFromFile("demoQueries.txt", exp_par.QUERY_NUM, user_queries);
+		user_queries = aqppp::Tool::loadUserQueriesDataFromFile("cache\\demoQueries.txt");
 		if (user_queries.empty())
 		{
 			//double t10 = clock();
@@ -175,7 +175,8 @@ namespace expDemo {
 			{
 				aqppp::Tool::GenUserQuires(sample, CAsample, PAR.RAND_SEED, exp_par.QUERY_NUM, { exp_par.MIN_QUERY_SELECTIVELY,exp_par.MAX_QUERY_SELECTIVELY }, user_queries);
 			}
-			aqppp::Tool::SaveQueryFile("demoQueries.txt", user_queries);
+
+			aqppp::Tool::saveDataToFile("cache\\demoQueries.txt", user_queries);
 		}
 		double time_gen_userQueries = (clock() - t4) / CLOCKS_PER_SEC;
 		std::cout << "GenUserQuires TIME: " << time_gen_userQueries << std::endl;
@@ -197,15 +198,34 @@ namespace expDemo {
 		std::cout << "start mtl..." << std::endl;
 
 		double t10 = clock();
-		aqppp::AssignBudgetForDimensions(PAR, false).AssignBudget(CAsample, mtl_nums);
+
+		mtl_nums = aqppp::Tool::loadDataFromFile<int>("cache\\mtlNums.txt");
+		if (mtl_nums.empty())
+		{
+			aqppp::AssignBudgetForDimensions(PAR, false).AssignBudget(CAsample, mtl_nums);
+			aqppp::Tool::saveDataToFile<int>("cache\\mtlNums.txt", mtl_nums);
+		}
 		double time_dist_mtl = (clock() - t10) / CLOCKS_PER_SEC;
+		std::cout << "ASSIGNBUDGET MTL NUMS TIME : " << time_dist_mtl << std::endl;
 
 		double t2 = clock();
 		NF_mtl_points = std::vector<std::vector<aqppp::CA>>();
 		std::vector<double> max_errs;
 		std::vector<int> iter_nums;
-		aqppp::HillClimbing(PAR.SAMPLE_ROW_NUM, PAR.SAMPLE_RATE, PAR.CI_INDEX, PAR.NF_MAX_ITER, PAR.INIT_DISTINCT_EVEN).ChoosePoints(CAsample, mtl_nums, NF_mtl_points, max_errs, iter_nums);
+
+		max_errs = aqppp::Tool::loadDataFromFile<double>("cache\\max_errs.txt");
+		iter_nums = aqppp::Tool::loadDataFromFile<int>("cache\\iter_nums.txt");
+		NF_mtl_points = aqppp::Tool::loadCASampleDataFromFile("cache\\NF_mtl_points.txt");
+		if (max_errs.empty() || iter_nums.empty() || NF_mtl_points.empty())
+		{
+			aqppp::HillClimbing(PAR.SAMPLE_ROW_NUM, PAR.SAMPLE_RATE, PAR.CI_INDEX, PAR.NF_MAX_ITER, PAR.INIT_DISTINCT_EVEN).ChoosePoints(CAsample, mtl_nums, NF_mtl_points, max_errs, iter_nums);
+			aqppp::Tool::saveDataToFile<double>("cache\\max_errs.txt", max_errs);
+			aqppp::Tool::saveDataToFile<int>("cache\\iter_nums.txt", iter_nums);
+			aqppp::Tool::saveDataToFile("cache\\NF_mtl_points.txt", NF_mtl_points);
+		}
 		double time_NF_find_mtl_point = (clock() - t2) / CLOCKS_PER_SEC;
+		std::cout << "Hill Climbing MAX ERRORS, ITER NUMS TIME : " << time_NF_find_mtl_point << std::endl;
+
 		fprintf(info_file, "sample size: %d\n", sample[0].size());
 		for (int i = 0; i < CAsample.size(); i++)
 		{

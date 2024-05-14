@@ -34,8 +34,10 @@ namespace aqppp {
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlenvhandle)) return;
 		if (SQL_SUCCESS != SQLSetEnvAttr(sqlenvhandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)) return;
 		if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlenvhandle, &sqlconnectionhandle)) return;
-
-		switch (SQLConnect(sqlconnectionhandle, (SQLCHAR*)odbc_name.c_str(), SQL_NTS, (SQLCHAR*)user_name.c_str(), SQL_NTS, (SQLCHAR*)pwd.c_str(), SQL_NTS))
+		SQLCHAR* serverName = (SQLCHAR*)odbc_name.c_str();
+		SQLCHAR* username = user_name.empty() ? NULL : (SQLCHAR*)user_name.c_str();
+		SQLCHAR* password = pwd.empty() ? NULL : (SQLCHAR*)pwd.c_str();
+		switch (SQLConnect(sqlconnectionhandle, serverName, SQL_NTS, username, SQL_NTS, password, SQL_NTS))
 		{
 		case SQL_SUCCESS_WITH_INFO:
 			std::cout << "success" << std::endl;

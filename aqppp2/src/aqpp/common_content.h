@@ -8,6 +8,23 @@
 #include<unordered_map>
 
 namespace aqppp {
+	struct ConnectionSettings {
+		//Specify the server name
+		std::string SERVER_NAME = "DESKTOP-PQDMPT2";
+		// name of the ODBC Connection
+		std::string DNS_NAME = "asad";
+		std::string USER_NAME = "";
+		std::string PASSWORD = "";
+		// Specify Trusted_Connection=yes or Integrated Security=SSPI to use Windows authentication
+		std::string CONNECTION_STRING = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-PQDMPT2;Trusted_Connection=yes;";
+
+		ConnectionSettings() = default;
+
+		ConnectionSettings(const std::string& SERVER_NAME, const std::string& DNS_NAME, const std::string& USER_NAME, const std::string& PASSWORD, const std::string& CONNECTION_STRING)
+			: SERVER_NAME(SERVER_NAME), DNS_NAME(DNS_NAME), USER_NAME(USER_NAME), PASSWORD(PASSWORD), CONNECTION_STRING(CONNECTION_STRING)
+		{
+		}
+	};
 	typedef std::vector<std::unordered_map<std::string, int>> DistId;
 	struct Settings {
 		std::string DB_NAME = "skew_s100_z2.dbo";

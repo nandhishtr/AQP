@@ -379,6 +379,8 @@ namespace aqppp
 		 return data;
 	 }
 
+
+
 	 void Tool::ReadQueriesFromFile(std::string query_file_full_name, int query_dim, std::vector<std::vector<Condition>> &o_user_queries)
 	 {
 		 o_user_queries = std::vector<std::vector<Condition>>();

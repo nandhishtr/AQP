@@ -49,6 +49,44 @@ namespace aqppp
 		static void saveDataToFile(const std::string& filename, const std::vector<std::vector<aqppp::Condition>>& data);
 		static std::vector<std::vector<aqppp::Condition>> loadUserQueriesDataFromFile(const std::string& filename);
 
+		template<typename T>
+		static void saveDataToFile(const std::string& filename, const std::vector<T>& data) {
+			std::ofstream file(filename, std::ios::binary);
+			if (!file.is_open()) {
+				std::cerr << "Failed to open file for writing: " << filename << std::endl;
+				return;
+			}
+
+			// Write the number of elements to the file
+			size_t numElements = data.size();
+			file.write(reinterpret_cast<const char*>(&numElements), sizeof(numElements));
+
+			// Write data to the file
+			file.write(reinterpret_cast<const char*>(data.data()), numElements * sizeof(T));
+
+			file.close();
+		}
+
+		template<typename T>
+		static std::vector<T> loadDataFromFile(const std::string& filename) {
+			std::ifstream file(filename, std::ios::binary);
+			if (!file.is_open()) {
+				std::cerr << "Failed to open file for reading: " << filename << std::endl;
+				return {};
+			}
+
+			// Read the number of elements from the file
+			size_t numElements;
+			file.read(reinterpret_cast<char*>(&numElements), sizeof(numElements));
+
+			// Read data from the file
+			std::vector<T> data(numElements);
+			file.read(reinterpret_cast<char*>(data.data()), numElements * sizeof(T));
+
+			file.close();
+
+			return data;
+		}
 		static void SaveQueryFile(std::string query_file_full_name, std::vector<std::vector<Condition>> &o_user_queries);
 		static void ReadQueriesFromFile(std::string query_file_full_name, int query_dim, std::vector<std::vector<Condition>> &o_user_queries);
 		/*
